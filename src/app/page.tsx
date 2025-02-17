@@ -1,115 +1,121 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import styles from "./page.module.css";
-
-const PUZZLE_ROWS = 5;
-const PUZZLE_COLS = 5;
-
-const shuffleArray = (array: any[]) => {
-  return array.sort(() => Math.random() - 0.5);
-};
-
-type PuzzlePiece = {
-  id: number;
-  src: string;
-  originalIndex: number;
-};
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import "../styles/globals.css";
 
 export default function Home() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
-  const [draggingPiece, setDraggingPiece] = useState<PuzzlePiece | null>(null);
-  const [changePiece, setChangePiece] = useState<number | null>(null);
+  const [nickname, setNickname] = useState("");
+  const [puzzleSize, setPuzzleSize] = useState(5);
+  const [selectImg, setSelectImg] = useState(0);
+  const puzzleList = [
+    "/img/puzzle1.png",
+    "/img/puzzle2.png",
+    "/img/puzzle3.png",
+  ];
+  const router = useRouter();
 
-  useEffect(() => {
-    const image = new window.Image();
-    image.src = "/img/blackSpirit.jpg";
-    image.onload = () => {
-      if (!canvasRef.current) return;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+  const prevImg = () => {
+    setSelectImg((prevIndex) =>
+      prevIndex === 0 ? puzzleList.length - 1 : prevIndex - 1
+    );
+  };
 
-      canvas.width = image.width;
-      canvas.height = image.height;
+  const nextImg = () => {
+    setSelectImg((prevIndex) =>
+      prevIndex === puzzleList.length - 1 ? 0 : prevIndex + 1
+    );
+  };
 
-      const pieceWidth = image.width / PUZZLE_COLS;
-      const pieceHeight = image.height / PUZZLE_ROWS;
+  const startGame = () => {
+    alert(
+      `${
+        nickname || "사용자"
+      }님, ${puzzleSize}x${puzzleSize} 퍼즐을 시작합니다!`
+    );
 
-      let tempPieces: PuzzlePiece[] = [];
-      let id = 0;
-      for (let y = 0; y < PUZZLE_ROWS; y++) {
-        for (let x = 0; x < PUZZLE_COLS; x++) {
-          const pieceCanvas = document.createElement("canvas");
-          pieceCanvas.width = pieceWidth;
-          pieceCanvas.height = pieceHeight;
-          const pieceCtx = pieceCanvas.getContext("2d");
-          if (!pieceCtx) continue;
-
-          pieceCtx.drawImage(
-            image,
-            x * pieceWidth,
-            y * pieceHeight,
-            pieceWidth,
-            pieceHeight,
-            0,
-            0,
-            pieceWidth,
-            pieceHeight
-          );
-
-          tempPieces.push({
-            id: id++,
-            src: pieceCanvas.toDataURL(),
-            originalIndex: y * PUZZLE_COLS + x,
-          });
-        }
-      }
-      setPieces(shuffleArray(tempPieces));
+    const gameData = {
+      nickname,
+      puzzleSize,
+      puzzleImg: puzzleList[selectImg],
     };
-  }, []);
 
-  const handleDraggingPiece = (piece: PuzzlePiece) => {
-    setDraggingPiece(piece);
-  };
-
-  const handleChangePiece = (event: React.DragEvent<HTMLDivElement>, index: number) => {
-    event.preventDefault();
-    setChangePiece(index);
-  };
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (draggingPiece === null || changePiece === null) return;
-  
-    const newPieces = [...pieces];
-    const draggedIndex = pieces.findIndex(p => p.id === draggingPiece.id);
-    [newPieces[draggedIndex], newPieces[changePiece]] = [newPieces[changePiece], newPieces[draggedIndex]];
-  
-    setPieces(newPieces);
-    setDraggingPiece(null);
-    setChangePiece(null);
+    sessionStorage.setItem("gameData", JSON.stringify(gameData));
+    router.push("/game");
   };
 
   return (
-    <div className={styles.page}>
-      <div className={styles.bucket}>
-        <div className={styles.puzzleBox}>
-          <canvas ref={canvasRef} style={{ display: "none" }} />
-          <div className={styles.puzzleGrid} onDrop={handleDrop} onDragOver={(event) => event.preventDefault()}>
-            {pieces.map((piece, index) => (
-              <img
-                key={piece.id}
-                src={piece.src}
-                alt={`piece-${index}`}
-                className={styles.puzzlePiece}
-                draggable
-                onDragStart={() => handleDraggingPiece(piece)}
-                onDragOver={(event) => handleChangePiece(event, index)}
-              />
-            ))}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#1e1e2e] to-[#111122] text-white font-sans px-4">
+      <h1 className="text-6xl font-bold mb-10 text-center drop-shadow-lg">
+        🧩 퍼즐 게임
+      </h1>
+
+      <div className="backdrop-blur-lg bg-white/10 border border-white/20 shadow-xl rounded-3xl p-8 w-full max-w-lg space-y-6">
+        <div className="flex flex-col">
+          <label className="text-lg font-semibold text-gray-300">닉네임</label>
+          <input
+            type="text"
+            className="mt-2 p-4 bg-transparent border border-gray-500 rounded-xl text-white outline-none focus:border-indigo-400 transition-all"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임을 입력하세요"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-lg font-semibold text-gray-300">
+            퍼즐 크기
+          </label>
+          <select
+            className="mt-2 p-4 bg-transparent border border-gray-500 rounded-xl text-white outline-none focus:border-indigo-400 transition-all appearance-none"
+            value={puzzleSize}
+            onChange={(e) => setPuzzleSize(Number(e.target.value))}
+          >
+            <option className="text-black" value={3}>
+              3 x 3
+            </option>
+            <option className="text-black" value={5}>
+              5 x 5
+            </option>
+            <option className="text-black" value={7}>
+              7 x 7
+            </option>
+            <option className="text-black" value={9}>
+              9 x 9
+            </option>
+          </select>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <label className="text-lg font-semibold text-gray-300">
+            퍼즐 이미지
+          </label>
+          <div className="flex items-center gap-4 mt-2">
+            <button
+              className="p-3 bg-gray-700/50 rounded-full hover:bg-gray-600 transition-colors"
+              onClick={prevImg}
+            >
+              ←
+            </button>
+            <img
+              src={puzzleList[selectImg]}
+              alt="Puzzle"
+              className="w-40 h-40 object-cover rounded-xl border border-gray-600 cursor-pointer transition-transform hover:scale-105"
+            />
+            <button
+              className="p-3 bg-gray-700/50 rounded-full hover:bg-gray-600 transition-colors"
+              onClick={nextImg}
+            >
+              →
+            </button>
           </div>
         </div>
+
+        <button
+          className="w-full bg-indigo-500 text-white py-4 text-xl rounded-xl hover:bg-indigo-600 transition-all shadow-lg"
+          onClick={startGame}
+        >
+          🎮 게임 시작
+        </button>
       </div>
     </div>
   );
