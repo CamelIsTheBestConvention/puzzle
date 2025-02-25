@@ -5,10 +5,13 @@ type ImgProps = {
 
 const ImgModal = ({ imgSrc, onClose }: ImgProps) => {
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
+      <div
+        className="absolute top-4 right-4 text-white text-3xl cursor-pointer"
+        onClick={onClose}
+      >
+        ✖
+      </div>
       <img
         src={imgSrc || ""}
         alt="puzzle"

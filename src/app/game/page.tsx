@@ -1,5 +1,7 @@
 "use client";
 import ImgModal from "@/components/ImgModal";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Timer from "./components/Timer";
 
@@ -18,7 +20,8 @@ const Game = () => {
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
   const [draggingPiece, setDraggingPiece] = useState<PuzzlePiece | null>(null);
   const [changePiece, setChangePiece] = useState<number | null>(null);
-  const [nickname, setNickname] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [puzzle, setPuzzle] = useState<number>(1000);
   const [puzzleSize, setPuzzleSize] = useState<number>(1);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [moveCount, setMoveCount] = useState<number>(0);
@@ -26,15 +29,18 @@ const Game = () => {
   const [seconds, setSeconds] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
 
+  const router = useRouter();
+
   // 게임 데이터 불러오기
   useEffect(() => {
     const gameData = sessionStorage.getItem("gameData");
 
     if (gameData) {
       const parsedGameData = JSON.parse(gameData);
-      setNickname(parsedGameData.nickname);
+      setName(parsedGameData.nickname);
       setPuzzleSize(parsedGameData.puzzleSize);
       setImgSrc(parsedGameData.puzzleImg);
+      setPuzzle(parsedGameData.puzzle);
     }
   }, []);
 
@@ -144,6 +150,39 @@ const Game = () => {
       if (newPieces.every((piece, index) => piece.originalIndex === index)) {
         setIsCompleted(true);
         alert("퍼즐을 완성했습니다!");
+
+        // 스코어 계산(이동보너스 + 시간보너스)
+        let score = 1000; // 기본 점수
+        const minMoves = puzzleSize * puzzleSize * 2; // 최소 이동 횟수
+        let moveBonus = Math.max(0, (minMoves * 2 - moveCount) * 10);
+        let timeBonus = Math.max(0, (300 - seconds) * 5);
+        score += moveBonus + timeBonus;
+
+        // 랭킹 등록
+        const saveRanking = async () => {
+          const { data, error } = await supabase.from("projects").insert([
+            {
+              name: name,
+              moveCount: moveCount,
+              timer: seconds,
+              puzzle: puzzle,
+              date: new Date().toISOString(),
+              score: score,
+            },
+          ]);
+
+          if (error) {
+            console.error("랭킹 등록 실패", error);
+            alert("랭킹 등록에 실패했습니다.");
+          } else {
+            console.log("랭킹 등록 성공", data);
+            router.push("/ranking");
+          }
+
+          return data;
+        };
+
+        saveRanking();
       }
     }, 500);
   };
@@ -152,7 +191,7 @@ const Game = () => {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#1e1e2e] to-[#111122] text-white font-sans">
       <div className="flex flex-col items-center space-y-6 p-4 max-w-4xl w-full">
         <h1 className="text-4xl font-bold text-center text-white drop-shadow-xl mb-4">
-          {nickname}님
+          {name}님
         </h1>
 
         <div className="flex items-center justify-center space-x-20">

@@ -36,6 +36,7 @@ export default function Home() {
     const gameData = {
       nickname,
       puzzleSize,
+      puzzle: selectImg + 1,
       puzzleImg: puzzleList[selectImg],
     };
 
