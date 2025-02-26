@@ -20,8 +20,8 @@ const Game = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
   const [draggingPiece, setDraggingPiece] = useState<PuzzlePiece | null>(null);
-  const [pieceWidth, setPieceWidth] = useState<number>(0);
-  const [pieceHeight, setPieceHeight] = useState<number>(0);
+  // const [pieceWidth, setPieceWidth] = useState<number>(800);
+  // const [pieceHeight, setPieceHeight] = useState<number>(800);
   const [changePiece, setChangePiece] = useState<number | null>(null);
   const [name, setName] = useState<string>("");
   const [puzzle, setPuzzle] = useState<number>(1000);
@@ -76,8 +76,6 @@ const Game = () => {
       canvas.width = image.width;
       const pieceWidth = image.width / puzzleSize;
       const pieceHeight = image.height / puzzleSize;
-      setPieceWidth(pieceWidth);
-      setPieceHeight(pieceHeight);
 
       const tempPieces: PuzzlePiece[] = [];
       let id = 0;
