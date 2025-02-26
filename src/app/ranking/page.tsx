@@ -47,6 +47,7 @@ const Ranking = () => {
             rankings.map((ranking, index) => (
               <div
                 key={ranking.id}
+                
                 className="bg-white/20 p-6 rounded-xl shadow-xl backdrop-blur-lg border border-white/30"
               >
                 <div className="flex items-center justify-between">

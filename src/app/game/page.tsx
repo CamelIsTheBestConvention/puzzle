@@ -1,24 +1,27 @@
 "use client";
 import ImgModal from "@/components/ImgModal";
 import { supabase } from "@/lib/supabaseClient";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Timer from "./components/Timer";
 
-const shuffleArray = (array: any[]) => {
+const shuffleArray = (array: PuzzlePiece[]) => {
   return array.sort(() => Math.random() - 0.5);
 };
 
-type PuzzlePiece = {
+interface PuzzlePiece {
   id: number;
   src: string;
   originalIndex: number;
-};
+}
 
 const Game = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
   const [draggingPiece, setDraggingPiece] = useState<PuzzlePiece | null>(null);
+  const [pieceWidth, setPieceWidth] = useState<number>(0);
+  const [pieceHeight, setPieceHeight] = useState<number>(0);
   const [changePiece, setChangePiece] = useState<number | null>(null);
   const [name, setName] = useState<string>("");
   const [puzzle, setPuzzle] = useState<number>(1000);
@@ -71,12 +74,12 @@ const Game = () => {
       if (!ctx) return;
 
       canvas.width = image.width;
-      canvas.height = image.height;
-
       const pieceWidth = image.width / puzzleSize;
       const pieceHeight = image.height / puzzleSize;
+      setPieceWidth(pieceWidth);
+      setPieceHeight(pieceHeight);
 
-      let tempPieces: PuzzlePiece[] = [];
+      const tempPieces: PuzzlePiece[] = [];
       let id = 0;
       for (let y = 0; y < puzzleSize; y++) {
         for (let x = 0; x < puzzleSize; x++) {
@@ -154,8 +157,8 @@ const Game = () => {
         // 스코어 계산(이동보너스 + 시간보너스)
         let score = 1000; // 기본 점수
         const minMoves = puzzleSize * puzzleSize * 2; // 최소 이동 횟수
-        let moveBonus = Math.max(0, (minMoves * 2 - moveCount) * 10);
-        let timeBonus = Math.max(0, (300 - seconds) * 5);
+        const moveBonus = Math.max(0, (minMoves * 2 - moveCount) * 10);
+        const timeBonus = Math.max(0, (300 - seconds) * 5);
         score += moveBonus + timeBonus;
 
         // 랭킹 등록
@@ -213,6 +216,8 @@ const Game = () => {
             className="grid gap-1"
             style={{
               gridTemplateColumns: `repeat(${puzzleSize}, 1fr)`,
+              gridTemplateRows: `repeat(${puzzleSize}, 1fr)`,
+              width: "100%",
               height: "100%",
             }}
             onDrop={handleDrop}
@@ -230,14 +235,13 @@ const Game = () => {
                 onDragOver={(event) => handleChangePiece(event, index)}
                 draggable
               >
-                <img
+                <Image
                   src={piece.src}
                   alt={`piece-${index}`}
-                  className="aspect-square object-cover rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-105"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                  }}
+                  layout="intrinsic"
+                  width={pieceWidth}
+                  height={pieceHeight}
+                  className="aspect-square rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-105"
                 />
               </div>
             ))}

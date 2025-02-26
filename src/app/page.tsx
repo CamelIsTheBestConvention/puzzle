@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import "../styles/globals.css";
@@ -97,10 +98,12 @@ export default function Home() {
             >
               ←
             </button>
-            <img
+            <Image
               src={puzzleList[selectImg]}
               alt="Puzzle"
-              className="w-40 h-40 object-cover rounded-xl border border-gray-600 cursor-pointer transition-transform hover:scale-105"
+              width={160} // Tailwind w-40
+              height={160} // Tailwind h-40
+              className="object-cover rounded-xl border border-gray-600 cursor-pointer transition-transform hover:scale-105"
             />
             <button
               className="p-3 bg-gray-700/50 rounded-full hover:bg-gray-600 transition-colors"
