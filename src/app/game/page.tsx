@@ -239,9 +239,9 @@ const Game = () => {
                   src={piece.src}
                   alt={`piece-${index}`}
                   layout="intrinsic"
-                  width={pieceWidth}
-                  height={pieceHeight}
-                  className="aspect-square rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-105"
+                  width={800}
+                  height={800}
+                  className="aspect-square object-cover rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-105"
                 />
               </div>
             ))}
