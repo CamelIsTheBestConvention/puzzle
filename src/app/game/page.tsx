@@ -189,10 +189,25 @@ const Game = () => {
   };
 
   // 모바일용 퍼즐 드래그
+  useEffect(() => {
+    const preventTouchMove = (event: TouchEvent) => {
+      event.preventDefault();
+    };
+
+    document.addEventListener("touchmove", preventTouchMove, {
+      passive: false,
+    });
+
+    return () => {
+      document.removeEventListener("touchmove", preventTouchMove);
+    };
+  }, []);
+
   const handleTouchStart = (
     event: React.TouchEvent<HTMLDivElement>,
     piece: PuzzlePiece
   ) => {
+    event.preventDefault();
     setDraggingPiece(piece);
   };
 
