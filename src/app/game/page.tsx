@@ -253,7 +253,7 @@ const Game = () => {
         <div className="relative w-full max-w-[80%] bg-white/20 p-6 rounded-3xl backdrop-blur-lg shadow-xl border border-white/30">
           <canvas ref={canvasRef} style={{ display: "none" }} />
           <div
-            className="grid gap-1"
+            className="grid"
             style={{
               gridTemplateColumns: `repeat(${puzzleSize}, 1fr)`,
               gridTemplateRows: `repeat(${puzzleSize}, 1fr)`,
@@ -284,7 +284,7 @@ const Game = () => {
                   layout="intrinsic"
                   width={800}
                   height={800}
-                  className="aspect-square object-cover shadow-lg cursor-pointer transition-transform hover:scale-105"
+                  className="aspect-square object-cover shadow-lg cursor-pointer transition-transform hover:scale-105 border-2 border-transparent hover:border-white"
                 />
               </div>
             ))}
