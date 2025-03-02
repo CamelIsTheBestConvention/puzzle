@@ -188,6 +188,48 @@ const Game = () => {
     }, 500);
   };
 
+  // 모바일용 퍼즐 드래그
+  const handleTouchStart = (
+    event: React.TouchEvent<HTMLDivElement>,
+    piece: PuzzlePiece
+  ) => {
+    setDraggingPiece(piece);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const touch = event.touches[0];
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!target) return;
+
+    const index = pieces.findIndex(
+      (p) => p.src === (target as HTMLImageElement).src
+    );
+    if (index !== -1) {
+      setChangePiece(index);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (draggingPiece === null || changePiece === null) return;
+
+    const newPieces = [...pieces];
+    const draggedIndex = pieces.findIndex((p) => p.id === draggingPiece.id);
+
+    if (draggedIndex !== -1 && changePiece !== -1) {
+      [newPieces[draggedIndex], newPieces[changePiece]] = [
+        newPieces[changePiece],
+        newPieces[draggedIndex],
+      ];
+
+      setMoveCount((prev) => prev + 1);
+    }
+
+    setPieces(newPieces);
+    setDraggingPiece(null);
+    setChangePiece(null);
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#1e1e2e] to-[#111122] text-white font-sans">
       <div className="flex flex-col items-center space-y-6 p-4 max-w-4xl w-full">
@@ -231,6 +273,9 @@ const Game = () => {
                 }}
                 onDragStart={() => handleDraggingPiece(piece)}
                 onDragOver={(event) => handleChangePiece(event, index)}
+                onTouchStart={(event) => handleTouchStart(event, piece)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 draggable
               >
                 <Image
@@ -239,7 +284,7 @@ const Game = () => {
                   layout="intrinsic"
                   width={800}
                   height={800}
-                  className="aspect-square object-cover rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-105"
+                  className="aspect-square object-cover shadow-lg cursor-pointer transition-transform hover:scale-105"
                 />
               </div>
             ))}
