@@ -20,8 +20,6 @@ const Game = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
   const [draggingPiece, setDraggingPiece] = useState<PuzzlePiece | null>(null);
-  // const [pieceWidth, setPieceWidth] = useState<number>(800);
-  // const [pieceHeight, setPieceHeight] = useState<number>(800);
   const [changePiece, setChangePiece] = useState<number | null>(null);
   const [name, setName] = useState<string>("");
   const [puzzle, setPuzzle] = useState<number>(1000);
@@ -110,47 +108,15 @@ const Game = () => {
     };
   }, [imgSrc, puzzleSize]);
 
-  // 퍼즐 조각 이동
-  const handleDraggingPiece = (piece: PuzzlePiece) => {
-    setDraggingPiece(piece);
-  };
-
-  const handleChangePiece = (
-    event: React.DragEvent<HTMLDivElement>,
-    index: number
-  ) => {
-    event.preventDefault();
-    setChangePiece(index);
-  };
-
-  // 퍼즐 조각 드롭
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (draggingPiece === null || changePiece === null) return;
-
-    const newPieces = [...pieces];
-    const draggedIndex = pieces.findIndex((p) => p.id === draggingPiece.id);
-
-    const previousPieceIndex = newPieces[draggedIndex].originalIndex;
-    const currentPieceIndex = newPieces[changePiece].originalIndex;
-
-    if (previousPieceIndex !== currentPieceIndex) {
-      [newPieces[draggedIndex], newPieces[changePiece]] = [
-        newPieces[changePiece],
-        newPieces[draggedIndex],
-      ];
-
-      setMoveCount((prev) => prev + 1);
-    }
-
-    setPieces(newPieces);
-    setDraggingPiece(null);
-    setChangePiece(null);
-
-    setTimeout(() => {
-      if (newPieces.every((piece, index) => piece.originalIndex === index)) {
+  // 퍼즐 완성
+  useEffect(() => {
+    if (
+      pieces.length > 0 &&
+      pieces.every((piece, index) => piece.originalIndex === index)
+    ) {
+      setTimeout(() => {
         setIsCompleted(true);
-        alert("퍼즐을 완성했습니다!");
+        alert("퍼즐이 완성되었습니다!");
 
         // 스코어 계산(이동보너스 + 시간보너스)
         let score = 1000; // 기본 점수
@@ -184,59 +150,44 @@ const Game = () => {
         };
 
         saveRanking();
-      }
-    }, 500);
-  };
+      }, 500);
+    }
+  }, [pieces]);
 
-  // 모바일용 퍼즐 드래그
-  useEffect(() => {
-    const preventTouchMove = (event: TouchEvent) => {
-      event.preventDefault();
-    };
-
-    document.addEventListener("touchmove", preventTouchMove, {
-      passive: false,
-    });
-
-    return () => {
-      document.removeEventListener("touchmove", preventTouchMove);
-    };
-  }, []);
-
-  const handleTouchStart = (
-    event: React.TouchEvent<HTMLDivElement>,
+  // 퍼즐 클릭
+  const handlePieceStart = (
+    event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
     piece: PuzzlePiece
   ) => {
-    event.preventDefault();
     setDraggingPiece(piece);
   };
 
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+  // 퍼즐 이동
+  const handlePieceMove = (
+    event: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
+    index: number
+  ) => {
     event.preventDefault();
-    const touch = event.touches[0];
-    const target = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (!target) return;
-
-    const index = pieces.findIndex(
-      (p) => p.src === (target as HTMLImageElement).src
-    );
-    if (index !== -1) {
-      setChangePiece(index);
-    }
+    setChangePiece(index);
   };
 
-  const handleTouchEnd = () => {
-    if (draggingPiece === null || changePiece === null) return;
+  // 퍼즐 교체
+  const handlePieceDrop = (
+    event: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+  ) => {
+    event.preventDefault();
+    if (!draggingPiece || changePiece === null) return;
+
+    console.log("뭐지");
 
     const newPieces = [...pieces];
     const draggedIndex = pieces.findIndex((p) => p.id === draggingPiece.id);
 
-    if (draggedIndex !== -1 && changePiece !== -1) {
+    if (draggedIndex !== changePiece) {
       [newPieces[draggedIndex], newPieces[changePiece]] = [
         newPieces[changePiece],
         newPieces[draggedIndex],
       ];
-
       setMoveCount((prev) => prev + 1);
     }
 
@@ -275,22 +226,19 @@ const Game = () => {
               width: "100%",
               height: "100%",
             }}
-            onDrop={handleDrop}
-            onDragOver={(event) => event.preventDefault()}
           >
             {pieces.map((piece, index) => (
               <div
                 key={piece.id}
                 className="flex justify-center items-center"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                }}
-                onDragStart={() => handleDraggingPiece(piece)}
-                onDragOver={(event) => handleChangePiece(event, index)}
-                onTouchStart={(event) => handleTouchStart(event, piece)}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                style={{ width: "100%", height: "100%" }}
+                onMouseDown={(event) => handlePieceStart(event, piece)}
+                onDragStart={(event) => handlePieceStart(event, piece)}
+                onDragOver={(event) => handlePieceMove(event, index)}
+                onTouchStart={(event) => handlePieceStart(event, piece)}
+                onTouchMove={(event) => handlePieceMove(event, index)}
+                onDrop={handlePieceDrop}
+                onTouchEnd={handlePieceDrop}
                 draggable
               >
                 <Image
