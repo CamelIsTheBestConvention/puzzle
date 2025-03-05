@@ -8,9 +8,9 @@ const PuzzlePage = () => {
   const [puzzleSize, setPuzzleSize] = useState(5);
   const [selectImg, setSelectImg] = useState(0);
   const puzzleList = [
-    "/img/puzzle1.png",
-    "/img/puzzle2.png",
-    "/img/puzzle3.png",
+    "/img/puzzle/puzzle1.png",
+    "/img/puzzle/puzzle2.png",
+    "/img/puzzle/puzzle3.png",
   ];
 
   const router = useRouter();
@@ -46,7 +46,7 @@ const PuzzlePage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#1e1e2e] to-[#111122] text-white font-sans px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen text-white font-sans px-4">
       <h1 className="text-6xl font-bold mb-10 text-center drop-shadow-lg">
         🧩 퍼즐 게임
       </h1>

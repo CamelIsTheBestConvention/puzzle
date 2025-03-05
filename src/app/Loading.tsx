@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -14,10 +16,11 @@ const Loading = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <Image
-        src="/img/loadingMococo.gif"
+        src="/img/uiux/loadingMococo.gif"
         alt="Loading..."
         width={300}
         height={300}
+        unoptimized
       />
       <p className="text-4xl font-semibold mb-4 text-white">Loading{dots}</p>
     </div>
