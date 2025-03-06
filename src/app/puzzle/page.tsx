@@ -5,7 +5,7 @@ import { useState } from "react";
 
 const PuzzlePage = () => {
   const [nickname, setNickname] = useState("");
-  const [puzzleSize, setPuzzleSize] = useState(5);
+  const [puzzleSize, setPuzzleSize] = useState(3);
   const [selectImg, setSelectImg] = useState(0);
   const puzzleList = [
     "/img/puzzle/puzzle1.png",
@@ -28,11 +28,16 @@ const PuzzlePage = () => {
   };
 
   const startGame = () => {
-    alert(
-      `${
-        nickname || "사용자"
-      }님, ${puzzleSize}x${puzzleSize} 퍼즐을 시작합니다!`
-    );
+    if (!nickname) {
+      alert("닉네임을 입력해주세요!");
+      return;
+    } else {
+      alert(
+        `${
+          nickname || "사용자"
+        }님, ${puzzleSize}x${puzzleSize} 퍼즐을 시작합니다!`
+      );
+    }
 
     const gameData = {
       nickname,
@@ -42,7 +47,7 @@ const PuzzlePage = () => {
     };
 
     sessionStorage.setItem("gameData", JSON.stringify(gameData));
-    router.push("/game");
+    router.push("/puzzle/game");
   };
 
   return (
@@ -58,8 +63,9 @@ const PuzzlePage = () => {
             type="text"
             className="mt-2 p-4 bg-transparent border border-gray-500 rounded-xl text-white outline-none focus:border-indigo-400 transition-all"
             value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="닉네임을 입력하세요"
+            onChange={(e) => setNickname(e.target.value.slice(0, 12))}
+            maxLength={12}
+            placeholder="닉네임을 입력하세요(1~12자)"
           />
         </div>
 

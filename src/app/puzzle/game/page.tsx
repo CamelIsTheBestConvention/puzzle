@@ -1,6 +1,7 @@
 "use client";
+
+import ClearModal from "@/components/ClearModal";
 import ImgModal from "@/components/ImgModal";
-import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -22,13 +23,14 @@ const Game = () => {
   const [draggingPiece, setDraggingPiece] = useState<PuzzlePiece | null>(null);
   const [changePiece, setChangePiece] = useState<number | null>(null);
   const [name, setName] = useState<string>("");
-  const [puzzle, setPuzzle] = useState<number>(1000);
-  const [puzzleSize, setPuzzleSize] = useState<number>(1);
+  const [puzzle, setPuzzle] = useState<number>(1);
+  const [puzzleSize, setPuzzleSize] = useState<number>(3);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [moveCount, setMoveCount] = useState<number>(0);
   const [showImg, setShowImg] = useState<boolean>(false);
   const [seconds, setSeconds] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [score, setScore] = useState(0);
 
   const router = useRouter();
 
@@ -116,40 +118,14 @@ const Game = () => {
     ) {
       setTimeout(() => {
         setIsCompleted(true);
-        alert("퍼즐이 완성되었습니다!");
 
         // 스코어 계산(이동보너스 + 시간보너스)
-        let score = 1000; // 기본 점수
+        let finalScore = 1000; // 기본 점수
         const minMoves = puzzleSize * puzzleSize * 2; // 최소 이동 횟수
         const moveBonus = Math.max(0, (minMoves * 2 - moveCount) * 10);
         const timeBonus = Math.max(0, (300 - seconds) * 5);
-        score += moveBonus + timeBonus;
-
-        // 랭킹 등록
-        const saveRanking = async () => {
-          const { data, error } = await supabase.from("projects").insert([
-            {
-              name: name,
-              moveCount: moveCount,
-              timer: seconds,
-              puzzle: puzzle,
-              date: new Date().toISOString(),
-              score: score,
-            },
-          ]);
-
-          if (error) {
-            console.error("랭킹 등록 실패", error);
-            alert("랭킹 등록에 실패했습니다.");
-          } else {
-            console.log("랭킹 등록 성공", data);
-            router.push("/ranking");
-          }
-
-          return data;
-        };
-
-        saveRanking();
+        finalScore += moveBonus + timeBonus;
+        setScore(finalScore);
       }, 500);
     }
   }, [pieces]);
@@ -257,6 +233,18 @@ const Game = () => {
 
       {showImg && (
         <ImgModal imgSrc={imgSrc || ""} onClose={() => setShowImg(false)} />
+      )}
+
+      {isCompleted && (
+        <ClearModal
+          isOpen={isCompleted}
+          score={score}
+          name={name}
+          moveCount={moveCount}
+          seconds={seconds}
+          puzzle={puzzle}
+          puzzleSize={puzzleSize}
+        />
       )}
     </div>
   );
